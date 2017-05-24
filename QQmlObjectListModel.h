@@ -116,7 +116,7 @@ public:
             }
         }
     }
-    bool setData (const QModelIndex & index, const QVariant & value, int role) {
+    bool setData (const QModelIndex & index, const QVariant & value, int role) Q_DECL_FINAL {
         bool ret = false;
         ItemType * item = at (index.row ());
         const QByteArray rolename = (role != Qt::DisplayRole ? m_roles.value (role, emptyBA ()) : m_dispRoleName);
@@ -125,7 +125,7 @@ public:
         }
         return ret;
     }
-    QVariant data (const QModelIndex & index, int role) const {
+    QVariant data (const QModelIndex & index, int role) const Q_DECL_FINAL {
         QVariant ret;
         ItemType * item = at (index.row ());
         const QByteArray rolename = (role != Qt::DisplayRole ? m_roles.value (role, emptyBA ()) : m_dispRoleName);
@@ -134,7 +134,7 @@ public:
         }
         return ret;
     }
-    QHash<int, QByteArray> roleNames (void) const {
+    QHash<int, QByteArray> roleNames (void) const Q_DECL_FINAL {
         return m_roles;
     }
     typedef typename QList<ItemType *>::const_iterator const_iterator;
@@ -162,16 +162,16 @@ public: // C++ API
     ItemType * getByUid (const QString & uid) const {
         return (!m_indexByUid.isEmpty () ? m_indexByUid.value (uid, Q_NULLPTR) : Q_NULLPTR);
     }
-    int roleForName (const QByteArray & name) const {
+    int roleForName (const QByteArray & name) const Q_DECL_FINAL {
         return m_roles.key (name, -1);
     }
-    int count (void) const {
+    int count (void) const Q_DECL_FINAL {
         return m_count;
     }
-    int size (void) const {
+    int size (void) const Q_DECL_FINAL {
         return m_count;
     }
-    bool isEmpty (void) const {
+    bool isEmpty (void) const Q_DECL_FINAL {
         return m_items.isEmpty ();
     }
     bool contains (ItemType * item) const {
@@ -180,7 +180,7 @@ public: // C++ API
     int indexOf (ItemType * item) const {
         return m_items.indexOf (item);
     }
-    void clear (void) {
+    void clear (void) Q_DECL_FINAL {
         if (!m_items.isEmpty ()) {
             beginRemoveRows (noParent (), 0, m_items.count () -1);
             FOREACH_PTR_IN_QLIST (ItemType, item, m_items) {
@@ -260,7 +260,7 @@ public: // C++ API
             endInsertRows ();
         }
     }
-    void move (int idx, int pos) {
+    void move (int idx, int pos) Q_DECL_FINAL {
         if (idx != pos) {
             // FIXME : use begin/end MoveRows when supported by Repeater, since then use remove/insert pair
             //beginMoveRows (noParent (), idx, idx, noParent (), (idx < pos ? pos +1 : pos));
@@ -278,7 +278,7 @@ public: // C++ API
             remove (idx);
         }
     }
-    void remove (int idx) {
+    void remove (int idx) Q_DECL_FINAL {
         if (idx >= 0 && idx < m_items.size ()) {
             beginRemoveRows (noParent (), idx, idx);
             ItemType * item = m_items.takeAt (idx);
@@ -298,40 +298,40 @@ public: // C++ API
     }
 
 public: // QML slots implementation
-    void append (QObject * item) {
+    void append (QObject * item) Q_DECL_FINAL {
         append (qobject_cast<ItemType *> (item));
     }
-    void prepend (QObject * item) {
+    void prepend (QObject * item) Q_DECL_FINAL {
         prepend (qobject_cast<ItemType *> (item));
     }
-    void insert (int idx, QObject * item) {
+    void insert (int idx, QObject * item) Q_DECL_FINAL {
         insert (idx, qobject_cast<ItemType *> (item));
     }
-    void remove (QObject * item) {
+    void remove (QObject * item) Q_DECL_FINAL {
         remove (qobject_cast<ItemType *> (item));
     }
-    bool contains (QObject * item) const {
+    bool contains (QObject * item) const Q_DECL_FINAL {
         return contains (qobject_cast<ItemType *> (item));
     }
-    int indexOf (QObject * item) const {
+    int indexOf (QObject * item) const Q_DECL_FINAL {
         return indexOf (qobject_cast<ItemType *> (item));
     }
     int indexOf (const QString & uid) const {
         return indexOf (get (uid));
     }
-    QObject * get (int idx) const {
+    QObject * get (int idx) const Q_DECL_FINAL {
         return static_cast<QObject *> (at (idx));
     }
-    QObject * get (const QString & uid) const {
+    QObject * get (const QString & uid) const Q_DECL_FINAL {
         return static_cast<QObject *> (getByUid (uid));
     }
-    QObject * getFirst (void) const {
+    QObject * getFirst (void) const Q_DECL_FINAL {
         return static_cast<QObject *> (first ());
     }
-    QObject * getLast (void) const {
+    QObject * getLast (void) const Q_DECL_FINAL {
         return static_cast<QObject *> (last ());
     }
-    QVariantList toVarArray (void) const {
+    QVariantList toVarArray (void) const Q_DECL_FINAL {
         return qListToVariant<ItemType *> (m_items);
     }
 
@@ -352,7 +352,7 @@ protected: // internal stuff
         static const int ret = Qt::UserRole;
         return ret;
     }
-    int rowCount (const QModelIndex & parent = QModelIndex ()) const {
+    int rowCount (const QModelIndex & parent = QModelIndex ()) const Q_DECL_FINAL {
         return (!parent.isValid () ? m_items.count () : 0);
     }
     void referenceItem (ItemType * item) {
@@ -390,7 +390,7 @@ protected: // internal stuff
             }
         }
     }
-    void onItemPropertyChanged (void) {
+    void onItemPropertyChanged (void) Q_DECL_FINAL {
         ItemType * item = qobject_cast<ItemType *> (sender ());
         const int row = m_items.indexOf (item);
         const int sig = senderSignalIndex ();
