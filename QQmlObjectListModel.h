@@ -38,8 +38,8 @@ template<typename T> QVariantList qListToVariant (const QList<T> & list) {
 
 // custom foreach for QList, which uses no copy and check pointer non-null
 #define FOREACH_PTR_IN_QLIST(_type_, _var_, _list_) \
-    for (typename QList<_type_ *>::const_iterator it = _list_.begin (); it != _list_.end (); ++it) \
-        for (_type_ * _var_ = static_cast<_type_ *> (* it); _var_ != Q_NULLPTR; _var_ = Q_NULLPTR)
+    for (typename QList<_type_ *>::const_iterator it = _list_.constBegin (); it != _list_.constEnd (); ++it) \
+        if (_type_ * _var_ = (* it))
 
 class QQmlObjectListModelBase : public QAbstractListModel { // abstract Qt base class
     Q_OBJECT
@@ -357,14 +357,11 @@ protected: // internal stuff
     }
     void referenceItem (ItemType * item) {
         if (item != Q_NULLPTR) {
-            if (item->parent () == Q_NULLPTR) {
+            if (!item->parent ()) {
                 item->setParent (this);
             }
-            const QList<int> signalsIdxList = m_signalIdxToRole.keys ();
-            for (QList<int>::const_iterator it = signalsIdxList.constBegin (); it != signalsIdxList.constEnd (); ++it) {
-                const int signalIdx = static_cast<int> (* it);
-                QMetaMethod notifier = item->metaObject ()->method (signalIdx);
-                connect (item, notifier, this, m_handler, Qt::UniqueConnection);
+            for (QHash<int, int>::const_iterator it = m_signalIdxToRole.constBegin (); it != m_signalIdxToRole.constEnd (); ++it) {
+                connect (item, item->metaObject ()->method (it.key ()), this, m_handler, Qt::UniqueConnection);
             }
             if (!m_uidRoleName.isEmpty ()) {
                 const QString key = m_indexByUid.key (item, emptyStr ());
@@ -399,7 +396,7 @@ protected: // internal stuff
         const int sig = senderSignalIndex ();
         const int role = m_signalIdxToRole.value (sig, -1);
         if (row >= 0 && role >= 0) {
-            QModelIndex index = QAbstractListModel::index (row, 0, noParent ());
+            const QModelIndex index = QAbstractListModel::index (row, 0, noParent ());
             QVector<int> rolesList;
             rolesList.append (role);
             if (m_roles.value (role) == m_dispRoleName) {
